@@ -1,3 +1,8 @@
+数据源：
+ 
+ 
+ 
+
 cProcessName = GetProcessName();
 cTM1UserName = TM1User();
 cTM1UserName=AttrS( '}Clients', cTM1UserName, '}TM1_DefaultDisplayValue' ) ;
