@@ -1,0 +1,7 @@
+循环取某个维度（vDim）中汇总项vTotal的n个直接子项的方法：
+i = 1;
+while(i<=elcompn(vDim,vTotal));
+  vEle = elcomp(vDim,vTotal,i);
+  SubsetElementInsert(vDim,vSubsetC,vEle,1);
+  i = i + 1;
+end;
