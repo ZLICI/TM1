@@ -1,0 +1,294 @@
+从v1到v17 一共有17个变量，需要自行添加
+
+参数              类型    缺省值
+vSourceScenario  字符串  Budget
+vSourceVersion   字符串  Working
+vSourceYear      字符串  2024
+vTargetScenario  字符串  Budget
+vTargetVersion   字符串  集团定稿版
+vTargetYear      字符串  2024
+vCubeName         字符串  IT-Project Hours
+
+### 前序 ### 
+#****Begin: Generated Statements***
+#****End: Generated Statements***
+
+vCubeSource = vCubeName;
+vCubeTarget = vCubeName;
+
+vStatus = CubeGetLogChanges(vCubeTarget);
+CubeSetLogChanges(vCubeTarget, 0);
+
+vStart=TIMST(now,'Y\m\d \h\i\s');
+TM1UserName = TM1User();
+if(scan('*',TM1UserName)>0);
+  TM1UserName = subst(TM1UserName,3,long(TM1UserName)-3);
+endif;
+
+vCubeLog = 'Version Control - Logs';
+vcount = 0;
+vProcess = GetProcessName();
+vvStart = TIMST(now,'Y-\m-\d \h:\i:\s');
+vToday = timst(now,'Y-\m-\d');
+count = 0;
+
+sRandomInt = NumberToString( INT( RAND() * 10000 ));
+vProcess=GetProcessName();
+vView = GetProcessName()|vSourceScenario|vSourceVersion|vTargetVersion|sRandomInt|vStart;
+vSubset = GetProcessName()|vSourceScenario|vSourceVersion|vTargetVersion|sRandomInt|vStart;
+vViewC = GetProcessName()|vSourceScenario|vTargetVersion|' Clear'|' '|sRandomInt|vStart;
+vSubsetC = GetProcessName()|vSourceScenario|vTargetVersion|' Clear'|' '|sRandomInt|vStart;
+
+DataSourceNameForServer = vCubeSource;
+DataSourceCubeView= vView;
+
+If(ViewExists(vCubeSource,vView)=1);
+  ViewDestroy(vCubeSource,vView);
+Endif;
+ViewCreate(vCubeSource,vView);
+
+If(ViewExists(vCubeTarget,vViewC)=1);
+  ViewDestroy(vCubeTarget,vViewC);
+Endif;
+ViewCreate(vCubeTarget,vViewC);
+
+vCubeSize = CubeDimensionCountGet(vCubeName);
+vDimScenario = 'Scenario';
+vDimVersion = 'Version';
+vDimYear = 'Year';
+
+nDimScenario = 0;
+nDimVersion = 0;
+nDimYear = 0;
+
+nDimensionCount=0;
+sDimension = TabDim(vCubeSource,nDimensionCount + 1);
+While(sDimension @<>'');
+  nDimensionCount = nDimensionCount + 1;
+  If(sDimension @= vDimScenario);nDimScenario = nDimensionCount;Endif;
+  If(sDimension @= vDimVersion);nDimVersion = nDimensionCount;Endif;
+  If(sDimension @= vDimYear);nDimYear = nDimensionCount;Endif;
+  sDimension = TabDim( vCubeSource, nDimensionCount + 1 );
+End;
+
+nError = 0;
+If(nDimScenario = 0);
+  nError = 1;
+Endif;
+
+If(nDimVersion = 0);
+  nError = 1;
+Endif;
+
+If(nDimYear = 0);
+  nError = 1;
+Endif;
+
+If(nError = 1);
+  ProcessBreak();
+Endif;
+
+########## Create DataSource ###########
+vDimension='Scenario';
+If(SubsetExists(vDimension,vSubset)=1);
+  SubsetDeleteAllElements(vDimension,vSubset);
+Else;
+  SubsetCreate(vDimension,vSubset);
+Endif;
+SubsetElementInsert(vDimension,vSubset,vSourceScenario,1);
+ViewSubsetAssign(vCubeSource,vView,vDimension,vSubset);
+
+vDimension='Version';
+If(SubsetExists(vDimension,vSubset)=1);
+  SubsetDeleteAllElements(vDimension,vSubset);
+Else;
+  SubsetCreate(vDimension,vSubset);
+Endif;
+SubsetElementInsert(vDimension,vSubset,vSourceVersion,1);
+ViewSubsetAssign(vCubeSource,vView,vDimension,vSubset);
+
+vDimension='Year';
+If(SubsetExists(vDimension,vSubset)=1);
+  SubsetDeleteAllElements(vDimension,vSubset);
+Else;
+  SubsetCreate(vDimension,vSubset);
+Endif;
+SubsetElementInsert(vDimension,vSubset,vSourceYear,1);
+ViewSubsetAssign(vCubeSource,vView,vDimension,vSubset);
+
+ViewExtractSkipCalcsSet( vCubeSource, vView, 1);
+ViewExtractSkipRuleValuesSet (vCubeSource, vView, 0);
+ViewExtractSkipZeroesSet (vCubeSource,vView, 1);
+
+########## Clear Data ###########
+vDimension='Scenario';
+If(SubsetExists(vDimension,vSubsetC)=1);
+  SubsetDeleteAllElements(vDimension,vSubsetC);
+Else;
+  SubsetCreate(vDimension,vSubsetC);
+Endif;
+SubsetElementInsert(vDimension,vSubsetC,vTargetScenario,1);
+ViewSubsetAssign(vCubeTarget,vViewC,vDimension,vSubsetC);
+
+vDimension='Version';
+If(SubsetExists(vDimension,vSubsetC)=1);
+  SubsetDeleteAllElements(vDimension,vSubsetC);
+Else;
+  SubsetCreate(vDimension,vSubsetC);
+Endif;
+SubsetElementInsert(vDimension,vSubsetC,vTargetVersion,1);
+ViewSubsetAssign(vCubeTarget,vViewC,vDimension,vSubsetC);
+
+vDimension='Year';
+If(SubsetExists(vDimension,vSubsetC)=1);
+  SubsetDeleteAllElements(vDimension,vSubsetC);
+Else;
+  SubsetCreate(vDimension,vSubsetC);
+Endif;
+SubsetElementInsert(vDimension,vSubsetC,vTargetYear,1);
+ViewSubsetAssign(vCubeTarget,vViewC,vDimension,vSubsetC);
+
+########## working版本不可以作为Target
+if(dimix('Version',vTargetVersion)=dimix('Version','Working'));
+  ProcessBreak;
+endif;
+
+# if(vSourceScenario@<>vTargetScenario % vSourceVersion@<>vTargetVersion);
+
+### 数据 ###
+#****Begin: Generated Statements***
+#****End: Generated Statements***
+
+vT1 = v1;
+vT2 = v2;
+vT3 = v3;
+vT4 = v4;
+vT5 = v5;
+vT6 = v6;
+vT7 = v7;
+vT8 = v8;
+vT9 = v9;
+vT10 = v10;
+vT11 = v11;
+vT12 = v12;
+vT13 = v13;
+vT14 = v14;
+vT15 = v15;
+vT16 = v16;
+vT17 = v17;
+
+If(nDimScenario=1); vT1 = vTargetScenario; Endif;
+If(nDimScenario=2); vT2 = vTargetScenario; Endif;
+If(nDimScenario=3); vT3 = vTargetScenario; Endif;
+If(nDimScenario=4); vT4 = vTargetScenario; Endif;
+If(nDimScenario=5); vT5 = vTargetScenario; Endif;
+If(nDimScenario=6); vT6 = vTargetScenario; Endif;
+If(nDimScenario=7); vT7 = vTargetScenario; Endif;
+If(nDimScenario=8); vT8 = vTargetScenario; Endif;
+If(nDimScenario=9); vT9 = vTargetScenario; Endif;
+If(nDimScenario=10); vT10 = vTargetScenario; Endif;
+If(nDimScenario=11); vT11 = vTargetScenario; Endif;
+If(nDimScenario=12); vT12 = vTargetScenario; Endif;
+If(nDimScenario=13); vT13 = vTargetScenario; Endif;
+If(nDimScenario=14); vT14 = vTargetScenario; Endif;
+If(nDimScenario=15); vT15 = vTargetScenario; Endif;
+If(nDimScenario=16); vT16 = vTargetScenario; Endif;
+If(nDimScenario=17); vT17 = vTargetScenario; Endif;
+
+If(nDimVersion=1); vT1 = vTargetVersion; Endif;
+If(nDimVersion=2); vT2 = vTargetVersion; Endif;
+If(nDimVersion=3); vT3 = vTargetVersion; Endif;
+If(nDimVersion=4); vT4 = vTargetVersion; Endif;
+If(nDimVersion=5); vT5 = vTargetVersion; Endif;
+If(nDimVersion=6); vT6 = vTargetVersion; Endif;
+If(nDimVersion=7); vT7 = vTargetVersion; Endif;
+If(nDimVersion=8); vT8 = vTargetVersion; Endif;
+If(nDimVersion=9); vT9 = vTargetVersion; Endif;
+If(nDimVersion=10); vT10 = vTargetVersion; Endif;
+If(nDimVersion=11); vT11 = vTargetVersion; Endif;
+If(nDimVersion=12); vT12 = vTargetVersion; Endif;
+If(nDimVersion=13); vT13 = vTargetVersion; Endif;
+If(nDimVersion=14); vT14 = vTargetVersion; Endif;
+If(nDimVersion=15); vT15 = vTargetVersion; Endif;
+If(nDimVersion=16); vT16 = vTargetVersion; Endif;
+If(nDimVersion=17); vT17 = vTargetVersion; Endif;
+
+If(nDimYear=1); vT1 = vTargetYear; Endif;
+If(nDimYear=2); vT2 = vTargetYear; Endif;
+If(nDimYear=3); vT3 = vTargetYear; Endif;
+If(nDimYear=4); vT4 = vTargetYear; Endif;
+If(nDimYear=5); vT5 = vTargetYear; Endif;
+If(nDimYear=6); vT6 = vTargetYear; Endif;
+If(nDimYear=7); vT7 = vTargetYear; Endif;
+If(nDimYear=8); vT8 = vTargetYear; Endif;
+If(nDimYear=9); vT9 = vTargetYear; Endif;
+If(nDimYear=10); vT10 = vTargetYear; Endif;
+If(nDimYear=11); vT11 = vTargetYear; Endif;
+If(nDimYear=12); vT12 = vTargetYear; Endif;
+If(nDimYear=13); vT13 = vTargetYear; Endif;
+If(nDimYear=14); vT14 = vTargetYear; Endif;
+If(nDimYear=15); vT15 = vTargetYear; Endif;
+If(nDimYear=16); vT16 = vTargetYear; Endif;
+If(nDimYear=17); vT17 = vTargetYear; Endif;
+
+sValue = Expand('%v' | NumberToString(nDimensionCount + 1) | '%');
+sElType = DType(TabDim(vCubeTarget,nDimensionCount),Expand('%v' | NumberToString(nDimensionCount) | '%'));
+
+If(nDimensionCount=2); if( CellIsUpdateable(vCubeTarget,vT1,vT2)=1); if(sElType@='S'); CellPutS(VT3,vCubeTarget,vT1,vT2); Else; CellPutN(numbr(sValue),vCubeTarget,vT1,vT2); Endif; endif;Endif;
+If(nDimensionCount=3); if( CellIsUpdateable(vCubeTarget,vT1,vT2,vT3)=1); if(sElType@='S'); CellPutS(VT4,vCubeTarget,vT1,vT2,vT3);Else; CellPutN(numbr(sValue),vCubeTarget,vT1,vT2,vT3); Endif;Endif;Endif;
+If(nDimensionCount=4); if( CellIsUpdateable(vCubeTarget,vT1,vT2,vT3,vT4)=1); if(sElType@='S'); CellPutS(VT5,vCubeTarget,vT1,vT2,vT3,vT4);Else; CellPutN(numbr(sValue),vCubeTarget,vT1,vT2,vT3,vT4); Endif;Endif;Endif;
+If(nDimensionCount=5); if( CellIsUpdateable(vCubeTarget,vT1,vT2,vT3,Vt4,vT5)=1); if(sElType@='S'); CellPutS(VT6,vCubeTarget,vT1,vT2,vT3,vT4,vT5);Else; CellPutN(numbr(sValue),vCubeTarget,vT1,vT2,vT3,vT4,vT5); Endif;Endif;Endif;
+If(nDimensionCount=6); if( CellIsUpdateable(vCubeTarget,vT1,vT2,vT3,Vt4,vT5,vT6)=1); if(sElType@='S'); CellPutS(VT7,vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6);Else; CellPutN(numbr(sValue),vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6); Endif;Endif;Endif;
+If(nDimensionCount=7); if( CellIsUpdateable(vCubeTarget,vT1,vT2,vT3,Vt4,vT5,vT6,vT7)=1); if(sElType@='S'); CellPutS(VT8,vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7);Else; CellPutN(numbr(sValue),vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7); Endif;Endif;Endif;
+If(nDimensionCount=8); if( CellIsUpdateable(vCubeTarget,vT1,vT2,vT3,Vt4,vT5,vT6,vT7,vT8)=1); if(sElType@='S'); CellPutS(VT9,vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8);Else; CellPutN(numbr(sValue),vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8); Endif;Endif;Endif;
+If(nDimensionCount=9); if( CellIsUpdateable(vCubeTarget,vT1,vT2,vT3,Vt4,vT5,vT6,vT7,vT8,vT9)=1); if(sElType@='S'); CellPutS(VT10,vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8,vT9);Else; CellPutN(numbr(sValue),vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8,vT9); Endif;Endif;Endif;
+If(nDimensionCount=10); if( CellIsUpdateable(vCubeTarget,vT1,vT2,vT3,Vt4,vT5,vT6,vT7,vT8,vT9,vT10)=1); if(sElType@='S'); CellPutS(VT11,vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8,vT9,vT10);Else; CellPutN(numbr(sValue),vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8,vT9,vT10); Endif;Endif;Endif;
+If(nDimensionCount=11); if( CellIsUpdateable(vCubeTarget,vT1,vT2,vT3,Vt4,vT5,vT6,vT7,vT8,vT9,vT10,vT11)=1); if(sElType@='S'); CellPutS(VT12,vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8,vT9,vT10,vT11);Else; CellPutN(numbr(sValue),vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8,vT9,vT10,vT11); Endif;Endif;Endif;
+If(nDimensionCount=12); if( CellIsUpdateable(vCubeTarget,vT1,vT2,vT3,Vt4,vT5,vT6,vT7,vT8,vT9,vT10,vT11,vT12)=1); if(sElType@='S'); CellPutS(VT13,vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8,vT9,vT10,vT11,vT12);Else; CellPutN(numbr(sValue),vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8,vT9,vT10,vT11,vT12); Endif;Endif;Endif;
+If(nDimensionCount=13); if( CellIsUpdateable(vCubeTarget,vT1,vT2,vT3,Vt4,vT5,vT6,vT7,vT8,vT9,vT10,vT11,vT12,vT13)=1); if(sElType@='S'); CellPutS(VT14,vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8,vT9,vT10,vT11,vT12,vT13);Else; CellPutN(numbr(sValue),vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8,vT9,vT10,vT11,vT12,vT13); Endif;Endif;Endif;
+If(nDimensionCount=14); if( CellIsUpdateable(vCubeTarget,vT1,vT2,vT3,Vt4,vT5,vT6,vT7,vT8,vT9,vT10,vT11,vT12,vT13,vT14)=1); if(sElType@='S'); CellPutS(VT15,vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8,vT9,vT10,vT11,vT12,vT13,vT14);Else; CellPutN(numbr(sValue),vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8,vT9,vT10,vT11,vT12,vT13,vT14); Endif;Endif;Endif;
+If(nDimensionCount=15); if( CellIsUpdateable(vCubeTarget,vT1,vT2,vT3,Vt4,vT5,vT6,vT7,vT8,vT9,vT10,vT11,vT12,vT13,vT14,vT15)=1); if(sElType@='S'); CellPutS(VT16,vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8,vT9,vT10,vT11,vT12,vT13,vT14,vT15);Else; CellPutN(numbr(sValue),vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8,vT9,vT10,vT11,vT12,vT13,vT14,vT15); Endif;Endif;Endif;
+If(nDimensionCount=16); if( CellIsUpdateable(vCubeTarget,vT1,vT2,vT3,Vt4,vT5,vT6,vT7,vT8,vT9,vT10,vT11,vT12,vT13,vT14,vT15,vT16)=1); if(sElType@='S'); CellPutS(VT17,vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8,vT9,vT10,vT11,vT12,vT13,vT14,vT15,vT16);Else; CellPutN(numbr(sValue),vCubeTarget,vT1,vT2,vT3,vT4,vT5,vT6,vT7,vT8,vT9,vT10,vT11,vT12,vT13,vT14,vT15,vT16); Endif;Endif;Endif;
+
+### 结语 ###
+#****Begin: Generated Statements***
+#****End: Generated Statements***
+
+CubeSetLogChanges(vCubeTarget, vStatus);
+
+If(ViewExists(vCubeSource,vView)=1);
+  ViewDestroy(vCubeSource,vView);
+Endif;
+
+If(ViewExists(vCubeTarget,vViewC)=1);
+  ViewDestroy(vCubeTarget,vViewC);
+Endif;
+
+i = 1;
+while(tabdim(vCubeSource,i)@<>'');
+    if(SubsetExists(tabdim(vCubeSource,i),vSubset)=1);
+        SubsetDestroy(tabdim(vCubeSource,i),vSubset);
+    endif;
+    i = i + 1;
+end;
+
+i = 1;
+while(tabdim(vCubeTarget,i)@<>'');
+    if(SubsetExists(tabdim(vCubeTarget,i),vSubsetC)=1);
+        SubsetDestroy(tabdim(vCubeTarget,i),vSubsetC);
+    endif;
+    i = i + 1;
+end;
+
+vEnd =TIMST(now,'\Y-\m-\d \h:\i:\s');
+Cubes = vCubeName;
+vClient = TM1User();
+vIndex=numbertostring(CellGetN(vCubeLog,vSourceYear,vSourceScenario,vSourceVersion,Cubes,'Total Index','Count')+1);
+CellPutN(1,vCubeLog,vSourceYear,vSourceScenario,vSourceVersion,Cubes,vIndex,'Count');
+CellPutS(vvStart,vCubeLog,vSourceYear,vSourceScenario,vSourceVersion,Cubes,vIndex,'开始时间');
+CellPutS(vEnd,vCubeLog,vSourceYear,vSourceScenario,vSourceVersion,Cubes,vIndex,'结束时间');
+CellPutS(vClient,vCubeLog,vSourceYear,vSourceScenario,vSourceVersion,Cubes,vIndex,'执行用户');
+CellPutS(vSourceScenario,vCubeLog,vSourceYear,vSourceScenario,vSourceVersion,Cubes,vIndex,'原场景');
+CellPutS(vSourceVersion,vCubeLog,vSourceYear,vSourceScenario,vSourceVersion,Cubes,vIndex,'原版本');
+CellPutS(vTargetScenario,vCubeLog,vSourceYear,vSourceScenario,vSourceVersion,Cubes,vIndex,'定稿场景');
+CellPutS(vTargetVersion,vCubeLog,vSourceYear,vSourceScenario,vSourceVersion,Cubes,vIndex,'定稿版本');
