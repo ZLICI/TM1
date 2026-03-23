@@ -1,0 +1,11 @@
+前序
+#停掉目标cube日志
+Cubesetlogchanges(‘目标cube’,0);
+#用其他cube的rules替换目标cube的rules
+Ruleloadfromfile(‘目标cube’,’选择替换的cube（没有rules的cube）’)
+
+结语
+#把cube的rules加回来
+Ruleloadfromfile(‘目标cube’,’’)
+#启用目标cube日志
+Cubesetlogchanges(‘目标cube’,1);
