@@ -1,0 +1,64 @@
+cProcessName = GetProcessName();
+cTM1UserName = TM1User();
+cTM1UserName=AttrS( '}Clients', cTM1UserName, '}TM1_DefaultDisplayValue' ) ;
+cTimeStamp = TimSt( Now, '\Y\m\d\h\i\s' );
+sRandomInt = NumberToString( INT( RAND( ) * 1000 ));
+cDebugFile = GetProcessErrorFileDirectory | cProcessName | '.' | cTimeStamp | '.' | sRandomInt ;
+sDebugFile = cDebugFile | 'Prolog.debug';
+NumericGlobalVariable('PrologMinorErrorCount');
+###############################################
+cCubeSource='Sys_Version_Copy_Control';
+
+IF(pVersionFrom@=pVersionTo & pScenarioFrom@=pScenarioTo);
+    ProcessBreak();
+Endif;
+
+pModel='年度预算';
+###############################################
+#
+#   Define Temporary Object Name
+#
+###############################################
+cTempName = 'TI_' | cProcessName | NumberToString(Int(Rand() * 10000));
+### Check if the view already exists
+While (ViewExists(cCubeSource, cTempName) <> 0);
+    cTempName = 'TI_' | cProcessName | NumberToString(Int(Rand() * 10000));
+End;
+cViewSource = cTempName|'_Source';
+cSubSource= cTempName|'_Source';
+cViewTarget = cTempName | '_Target';
+cSubTarget = cTempName | '_Target';
+
+#########  Create DataSource  #############
+
+If(ViewExists(cCubeSource,cViewSource)=1);
+  ViewDestroy(cCubeSource,cViewSource);
+Endif;
+ViewCreate(cCubeSource,cViewSource);
+
+cDim='S_Version_Copy_Model';
+If(SubsetExists(cDim,cSubSource )=1);
+  SubsetDeleteAllElements(cDim,cSubSource);
+Else;
+  SubsetCreate(cDim,cSubSource );
+Endif;
+SubsetElementInsert(cDim,cSubSource,pModel,1);
+ViewSubsetAssign(cCubeSource,cViewSource,cDim,cSubSource);
+
+cDim='S_数据指标';
+If(SubsetExists(cDim,cSubSource )=1);
+  SubsetDeleteAllElements(cDim,cSubSource);
+Else;
+  SubsetCreate(cDim,cSubSource );
+Endif;
+SubsetElementInsert(cDim,cSubSource,'文本',1);
+ViewSubsetAssign(cCubeSource,cViewSource,cDim,cSubSource);
+
+
+ViewExtractSkipCalcsSet( cCubeSource, cViewSource, 1);
+ViewExtractSkipRuleValuesSet (cCubeSource, cViewSource, 0);
+ViewExtractSkipZeroesSet (cCubeSource,cViewSource, 1);
+DatasourceNameForServer = cCubeSource;
+DatasourceNameForClient = cCubeSource;
+DatasourceType='VIEW';
+DatasourceCubeView = cViewSource;
