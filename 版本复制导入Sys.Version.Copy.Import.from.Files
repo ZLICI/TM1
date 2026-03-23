@@ -1,0 +1,419 @@
+#Section 序言
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+cProcessName = GetProcessName();
+cTM1UserName = TM1User();
+cTM1UserName=AttrS( '}Clients', cTM1UserName, '}TM1_DefaultDisplayValue' ) ;
+cTimeStamp = TimSt( Now, '\Y\m\d\h\i\s' );
+sRandomInt = NumberToString( INT( RAND( ) * 1000 ));
+cDebugFile = GetProcessErrorFileDirectory | cProcessName | '.' | cTimeStamp | '.' | sRandomInt ;
+sDebugFile = cDebugFile | 'Prolog.debug';
+NumericGlobalVariable('PrologMinorErrorCount');
+###############################################
+cCubeSource=pCube;
+cCubeTarget = pCube;
+
+cInterface_File_Path=CellGetS('Sys_Parameter','Interface_File_Path','文本');
+filename=cInterface_File_Path|'version_copy\'|pCube|'.cma';
+
+
+
+#如果不存在文件，中断进程
+if(FileExists(FileName) <> 1);
+    logoutput('info',pCube);
+    ProcessBreak();
+endif;
+
+###############################################
+#
+#   Define Temporary Object Name
+#
+###############################################
+cTempName = '}TI_' | cProcessName | NumberToString(Int(Rand() * 10000));
+### Check if the view already exists
+While (ViewExists(cCubeSource, cTempName) <> 0);
+    cTempName = '}TI_' | cProcessName | NumberToString(Int(Rand() * 10000));
+End;
+cViewSource = cTempName|'_Source';
+cSubSource= cTempName|'_Source';
+cViewTarget = cTempName | '_Target';
+cSubTarget = cTempName | '_Target';
+
+#nCubeSize = CubeDimensionCountGet(pCube);
+#cDimScenario = 'Scenario';
+cDimYear = 'S_年份';
+cDimVersion = 'S_版本';
+cDimScenario= 'S_场景';
+#cDimMonth= 'Month';
+
+
+nDimScenario = 0;
+nDimVersion = 0;
+nDimYear = 0;
+#nDimMonth = 0;
+
+
+nDimensionCount = 0;
+sDimension = TabDim( cCubeSource, nDimensionCount + 1 );
+While( sDimension @<> '' );
+  nDimensionCount = nDimensionCount + 1;
+  If (sDimension @= cDimScenario);
+     nDimScenario = nDimensionCount;
+  Endif;
+  If (sDimension @= cDimVersion);
+     nDimVersion = nDimensionCount;
+  Endif;
+  If (sDimension @= cDimYear);
+     nDimYear = nDimensionCount;
+  Endif;
+#  If (sDimension @= cDimMonth);
+#     nDimMonth = nDimensionCount;
+#  Endif;
+
+  sDimension = TabDim( cCubeSource, nDimensionCount + 1 );
+End;
+
+nError = 0;
+#If (nDimScenario = 0);
+   # AsciiOutput(sDebugFile, 'Scenario dimension is not part of the cube ' | cCubeSource);
+#    nError = 1;
+#Endif;
+
+If (nDimVersion = 0);
+    #AsciiOutput(sDebugFile, 'Version dimension is not part of the cube ' | cCubeSource);
+    nError = 1;
+Endif;
+
+If (nDimYear = 0);
+   # AsciiOutput(sDebugFile, 'Financial Year dimension is not part of the cube ' | cCubeSource);
+    nError = 1;
+Endif;
+
+#If (nDimMonth = 0);
+   # AsciiOutput(sDebugFile, 'Financial Year dimension is not part of the cube ' | cCubeSource);
+#    nError = 1;
+#Endif;
+
+If (nError = 1);
+    ProcessBreak();
+Endif;
+
+
+DatasourceNameForServer = FileName;
+
+
+
+
+
+
+
+
+
+#Section 元数据
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#Section 数据
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+IF(nDimScenario=1);
+        v1 = pScenarioTo;
+Endif;
+IF(nDimScenario=2);
+        v2 = pScenarioTo;
+Endif;
+IF(nDimScenario=3);
+        v3 = pScenarioTo;
+Endif;
+IF(nDimScenario=4);
+        v4= pScenarioTo;
+Endif;
+IF(nDimScenario=5);
+        v5= pScenarioTo;
+Endif;
+IF(nDimScenario=6);
+        v6= pScenarioTo;
+Endif;
+IF(nDimScenario=7);
+        v7= pScenarioTo;
+Endif;
+IF(nDimScenario=8);
+        v8= pScenarioTo;
+Endif;
+IF(nDimScenario=9);
+        v9= pScenarioTo;
+Endif;
+IF(nDimScenario=10);
+        v10= pScenarioTo;
+Endif;
+IF(nDimScenario=11);
+        v11= pScenarioTo;
+Endif;
+IF(nDimScenario=12);
+        v12= pScenarioTo;
+Endif;
+
+IF(nDimVersion=1);
+        v1 = pVersionTo;
+Endif;
+IF(nDimVersion=2);
+        v2 = pVersionTo;
+Endif;
+IF(nDimVersion=3);
+        v3 = pVersionTo;
+Endif;
+IF(nDimVersion=4);
+        v4= pVersionTo;
+Endif;
+IF(nDimVersion=5);
+        v5= pVersionTo;
+Endif;
+IF(nDimVersion=6);
+        v6= pVersionTo;
+Endif;
+IF(nDimVersion=7);
+        v7= pVersionTo;
+Endif;
+IF(nDimVersion=8);
+        v8= pVersionTo;
+Endif;
+IF(nDimVersion=9);
+        v9= pVersionTo;
+Endif;
+IF(nDimVersion=10);
+        v10= pVersionTo;
+Endif;
+IF(nDimVersion=11);
+        v11= pVersionTo;
+Endif;
+IF(nDimVersion=12);
+        v12= pVersionTo;
+Endif;
+
+IF(nDimYear=1);
+        v1 = pYearTo;
+Endif;
+IF(nDimYear=2);
+        v2 = pYearTo;
+Endif;
+IF(nDimYear=3);
+        v3 = pYearTo;
+Endif;
+IF(nDimYear=4);
+        v4= pYearTo;
+Endif;
+IF(nDimYear=5);
+        v5= pYearTo;
+Endif;
+IF(nDimYear=6);
+        v6= pYearTo;
+Endif;
+IF(nDimYear=7);
+        v7= pYearTo;
+Endif;
+IF(nDimYear=8);
+        v8= pYearTo;
+Endif;
+IF(nDimYear=9);
+        v9= pYearTo;
+Endif;
+IF(nDimYear=10);
+        v10= pYearTo;
+Endif;
+IF(nDimYear=11);
+        v11= pYearTo;
+Endif;
+IF(nDimYear=12);
+        v12= pYearTo;
+Endif;
+
+
+sValue = Expand('%v' | NumberToString(nDimensionCount + 1) | '%');
+sElType = DType( TabDim(cCubeTarget, nDimensionCount), Expand('%v' | NumberToString(nDimensionCount) | '%'));
+
+If (nDimensionCount = 3);
+    If (CellIsUpdateable(cCubeTarget, v1, v2, v3) = 1);
+        If (sElType @= 'S');
+            CellPutS(sValue, cCubeTarget, v1, v2, v3);
+        Else;
+            nValue = StringToNumber(sValue);
+            CellPutN(nValue, cCubeTarget, v1, v2, v3);
+        Endif;
+    Endif;
+ElseIf (nDimensionCount = 4);
+    If (CellIsUpdateable(cCubeTarget, v1, v2, v3, v4) = 1);
+        If (sElType @= 'S');
+            CellPutS(sValue, cCubeTarget, v1, v2, v3, v4);
+        Else;
+            nValue = StringToNumber(sValue);
+            CellPutN(nValue, cCubeTarget, v1, v2, v3, v4);
+        Endif;
+    Endif;
+ElseIf (nDimensionCount = 5);
+    If (CellIsUpdateable(cCubeTarget, v1, v2, v3, v4, v5) = 1);
+        If (sElType @= 'S');
+            CellPutS(sValue, cCubeTarget, v1, v2, v3, v4, v5);
+        Else;
+            nValue = StringToNumber(sValue);
+            CellPutN(nValue, cCubeTarget, v1, v2, v3, v4, v5);
+        Endif;
+    Endif;
+ElseIf (nDimensionCount = 6);
+    If (CellIsUpdateable(cCubeTarget, v1, v2, v3, v4, v5, v6) = 1);
+        If (sElType @= 'S');
+            CellPutS(sValue, cCubeTarget, v1, v2, v3, v4, v5, v6);
+        Else;
+            nValue = StringToNumber(sValue);
+            CellPutN(nValue, cCubeTarget, v1, v2, v3, v4, v5, v6);
+        Endif;
+    Endif;
+ElseIf (nDimensionCount = 7);
+    If (CellIsUpdateable(cCubeTarget, v1, v2, v3, v4, v5, v6, v7) = 1);
+        If (sElType @= 'S');
+            CellPutS(sValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7);
+        Else;
+            nValue = StringToNumber(sValue);
+            CellPutN(nValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7);
+        Endif;
+    Endif;
+ElseIf (nDimensionCount = 8);
+    If (CellIsUpdateable(cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8) = 1);
+        If (sElType @= 'S');
+            CellPutS(sValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8);
+        Else;
+            nValue = StringToNumber(sValue);
+            CellPutN(nValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8);
+        Endif;
+    Endif;
+ElseIf (nDimensionCount = 9);
+    If (CellIsUpdateable(cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9) = 1);
+        If (sElType @= 'S');
+            CellPutS(sValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9);
+        Else;
+            nValue = StringToNumber(sValue);
+            CellPutN(nValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9);
+        Endif;
+    Endif;
+ElseIf (nDimensionCount = 10);
+    If (CellIsUpdateable(cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) = 1);
+        If (sElType @= 'S');
+            CellPutS(sValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
+        Else;
+            nValue = StringToNumber(sValue);
+            CellPutN(nValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
+        Endif;
+    Endif;
+ElseIf (nDimensionCount = 11);
+    If (CellIsUpdateable(cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+                                                          v11) = 1);
+        If (sElType @= 'S');
+            CellPutS(sValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+                                                              v11);
+        Else;
+            nValue = StringToNumber(sValue);
+            CellPutN(nValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+                                                              v11);
+        Endif;
+    Endif;
+ElseIf (nDimensionCount = 12);
+    If (CellIsUpdateable(cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+                                                          v11, v12) = 1);
+        If (sElType @= 'S');
+            CellPutS(sValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+                                                              v11, v12);
+        Else;
+            nValue = StringToNumber(sValue);
+            CellPutN(nValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+                                                              v11, v12);
+        Endif;
+    Endif;
+ElseIf (nDimensionCount = 13);
+    If (CellIsUpdateable(cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+                                                          v11, v12, v13) = 1);
+        If (sElType @= 'S');
+            CellPutS(sValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+                                                              v11, v12, v13);
+        Else;
+            nValue = StringToNumber(sValue);
+            CellPutN(nValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+                                                              v11, v12, v13);
+        Endif;
+    Endif;
+ElseIf (nDimensionCount = 14);
+    If (CellIsUpdateable(cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+                                                          v11, v12, v13, v14) = 1);
+        If (sElType @= 'S');
+            CellPutS(sValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+                                                              v11, v12, v13, v14);
+        Else;
+            nValue = StringToNumber(sValue);
+            CellPutN(nValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+                                                              v11, v12, v13, v14);
+        Endif;
+    Endif;
+ElseIf (nDimensionCount = 15);
+    If (CellIsUpdateable(cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+                                                          v11, v12, v13, v14, v15) = 1);
+        If (sElType @= 'S');
+            CellPutS(sValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+                                                              v11, v12, v13, v14, v15);
+        Else;
+            nValue = StringToNumber(sValue);
+            CellPutN(nValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+                                                              v11, v12, v13, v14, v15);
+        Endif;
+    Endif;
+#ElseIf (nDimensionCount = 16);
+#    If (CellIsUpdateable(cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+#                                                          v11, v12, v13, v14, v15, v16) = 1);
+#        If (sElType @= 'S');
+#            CellPutS(sValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+#                                                              v11, v12, v13, v14, v15, v16);
+#        Else;
+#            nValue = StringToNumber(sValue);
+#            CellPutN(nValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+#                                                              v11, v12, v13, v14, v15, v16);
+#        Endif;
+#    Endif;
+#ElseIf (nDimensionCount = 17);
+#    If (CellIsUpdateable(cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+#                                                          v11, v12, v13, v14, v15, v16, v17) = 1);
+#        If (sElType @= 'S');
+#            CellPutS(sValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+#                                                              v11, v12, v13, v14, v15, v16, v17);
+#        Else;
+#            nValue = StringToNumber(sValue);
+#            CellPutN(nValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+#                                                              v11, v12, v13, v14, v15, v16, v17);
+#        Endif;
+#    Endif;
+#ElseIf (nDimensionCount = 18);
+#    If (CellIsUpdateable(cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+#                                                          v11, v12, v13, v14, v15, v16, v17, v18) = 1);
+#        If (sElType @= 'S');
+#            CellPutS(sValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+#                                                              v11, v12, v13, v14, v15, v16, v17, v18);
+#      Else;
+#            nValue = StringToNumber(sValue);
+#            CellPutN(nValue, cCubeTarget, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10,
+#                                                              v11, v12, v13, v14, v15, v16, v17, v18);
+#        Endif;
+#    Endif;
+Endif;
+#Section 结尾
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+if(FileExists(FileName) >0);
+        vcmd='cmd /c del /f '|filename;
+#logoutput('info',vcmd);
+        ExecuteCommand(vcmd ,1);
+Endif;
