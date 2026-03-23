@@ -1,0 +1,143 @@
+数据源 变量 参数 前序 元数据 数据 结语 日志
+
+参数                类型     缺省值    
+vSourceScenario    字符串    Budget    
+vSourceVersion     字符串    Working   
+vSourceYear        字符串    2024      
+vTargetScenario    字符串    Budget    
+vTargetVersion     字符串    V7        
+vTargetYear        字符串    2024      
+
+### 前序 ###
+
+#****Begin: Generated Statements***
+#****End: Generated Statements***
+
+##### 进程日志信息定义#####
+vCubeTargetRZ = 'SYS_进程日志';
+vTodayRZ = timst(now,'Y-\m-\d');
+vStartRZ = TIMST(now,'Y-\m-\d \h:\i:\s');
+vcountRZ = 0;
+linecountRZ = 0;
+
+vCubeLog = 'Version Control - Logs';
+vcount = 0;
+vProcess = GetProcessName();
+vvStart = TIMST(now,'Y-\m-\d \h:\i:\s');
+vToday = timst(now,'Y-\m-\d');
+count = 0;
+
+vCubeSource = 'Version Control - Cube List';
+vStart=TIMST(now,'Y\m\d \h\i\s');
+TM1UserName = TM1User();
+if(scan('*',TM1UserName)>0);
+  TM1UserName = subst(TM1UserName,3,long(TM1UserName)-3);
+endif;
+sRandomInt = NumberToString( INT( RAND() * 10000 ));
+vProcess=GetProcessName();
+vView = GetProcessName()|sRandomInt|vStart;
+vSubset = GetProcessName()|sRandomInt|vStart;
+vViewC = GetProcessName()|' Clear'|' '|sRandomInt|vStart;
+vSubsetC = GetProcessName()|' Clear'|' '|sRandomInt|vStart;
+
+DataSourceNameForServer = vCubeSource;
+DataSourceCubeView= vView;
+
+If(ViewExists(vCubeSource,vView)=1);
+  ViewDestroy(vCubeSource,vView);
+Endif;
+ViewCreate(vCubeSource,vView);
+
+########## Create DataSource ###########
+vDimension='Scenario';
+If(SubsetExists(vDimension,vSubset)=1);
+  SubsetDeleteAllElements(vDimension,vSubset);
+Else;
+  SubsetCreate(vDimension,vSubset);
+Endif;
+SubsetElementInsert(vDimension,vSubset,vSourceScenario,1);
+ViewSubsetAssign(vCubeSource,vView,vDimension,vSubset);
+
+vDimension='Version';
+If(SubsetExists(vDimension,vSubset)=1);
+  SubsetDeleteAllElements(vDimension,vSubset);
+Else;
+  SubsetCreate(vDimension,vSubset);
+Endif;
+SubsetElementInsert(vDimension,vSubset,vSourceVersion,1);
+ViewSubsetAssign(vCubeSource,vView,vDimension,vSubset);
+
+vDimension='Version Control Measure';
+If(SubsetExists(vDimension,vSubset)=1);
+  SubsetDeleteAllElements(vDimension,vSubset);
+Else;
+  SubsetCreate(vDimension,vSubset);
+Endif;
+SubsetElementInsert(vDimension,vSubset,'定稿范围',1);
+ViewSubsetAssign(vCubeSource,vView,vDimension,vSubset);
+
+########## working版本不可以作为Target
+if(dimix('Version',vTargetVersion)=dimix('Version','Working'));
+  ProcessBreak;
+endif;
+
+### 数据 ###
+#****Begin: Generated Statements***
+#****End: Generated Statements***
+
+LogOutput('INFO','Copy cube:'|Cubes);
+##### Jessy改为Run Process并发版本复制
+if(Cubes@='Production - Product Cost');
+RunProcess('cube3.Production - Product Cost - 版本复制导出',
+           'vSourceScenario',vSourceScenario,
+           'vSourceVersion',vSourceVersion,
+           'vSourceYear',vSourceYear,
+           'vTargetScenario',vTargetScenario,
+           'vTargetVersion',vTargetVersion,
+           'vTargetYear',vTargetYear);
+elseif(Cubes@='Production - Product BOM');
+# ItemSkip;
+RunProcess('cube3.Production - Product BOM - 版本复制导出',
+           'vSourceScenario',vSourceScenario,
+           'vSourceVersion',vSourceVersion,
+           'vSourceYear',vSourceYear,
+           'vTargetScenario',vTargetScenario,
+           'vTargetVersion',vTargetVersion,
+           'vTargetYear',vTargetYear);
+elseif(Cubes@='Sales - 产品价格测算');
+RunProcess('cube3.Sales - 产品价格测算 - 版本复制导出',
+           'vSourceScenario',vSourceScenario,
+           'vSourceVersion',vSourceVersion,
+           'vSourceYear',vSourceYear,
+           'vTargetScenario',vTargetScenario,
+           'vTargetVersion',vTargetVersion,
+           'vTargetYear',vTargetYear);
+else;
+RunProcess('Transfer - Version Copy',
+           'vSourceScenario',vSourceScenario,
+           'vSourceVersion',vSourceVersion,
+           'vSourceYear',vSourceYear,
+           'vTargetScenario',vTargetScenario,
+           'vTargetVersion',vTargetVersion,
+           'vTargetYear',vTargetYear,
+           'vCubeName',Cubes);
+endif;
+Sleep(100);
+count = count +1;
+
+### 结语 ###
+
+#****Begin: Generated Statements***
+#****End: Generated Statements***
+
+If(ViewExists(vCubeSource,vView)=1);
+  ViewDestroy(vCubeSource,vView);
+Endif;
+
+i = 1;
+while(tabdim(vCubeSource,i)@<>'');
+    if(SubsetExists(tabdim(vCubeSource,i),vSubset)=1);
+        SubsetDestroy(tabdim(vCubeSource,i),vSubset);
+    endif;
+    i = i + 1;
+end;
