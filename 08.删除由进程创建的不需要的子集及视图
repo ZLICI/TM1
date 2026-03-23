@@ -1,0 +1,78 @@
+#参数
+pCube
+pDimension
+
+#前序
+
+### 删除cube视图 ###
+if(pCube@='');
+  k = 1;
+  while(k<=dimsiz('}Cubes'));
+    cCube = dimnm('}Cubes',k);
+    vDim = '}View_'|vCube;
+    if(dimensionexists(vDim)=1);
+      i = 1;
+      while(i<=dimsiz(vDim));
+        vView = dimnm(vDim,i)
+        if(subst(vView,1,4)@='Cube' % subst(vView,1,6)@='Export' % subst(vView,1,8)@='Transfer' % subst(vView,1,6)@='Import' % subst(vView,1,3)@='Gen' % subst(vView,1,9)@='TempView' % subst(vView,1,7)@='Tranfer' );
+          ViewDestory(vCube,vView);
+          i = i - 1;
+        endif;
+      i = i + 1;
+      end;
+    endif;
+  k = k + 1;
+  end;
+else;
+cCube = pCube;
+vDim = '}View_'|vCube;
+if(dimensionexists(vDim)=1);
+  i = 1;
+  while(i<=dimsiz(vDim));
+    vView = dimnm(vDim,i)
+    if(subst(vView,1,4)@='Cube' % subst(vView,1,6)@='Export' % subst(vView,1,8)@='Transfer' % subst(vView,1,6)@='Import' 
+      % subst(vView,1,3)@='Gen' % subst(vView,1,9)@='TempView' % subst(vView,1,7)@='Tranfer' );
+      ViewDestory(vCube,vView);
+      i = i - 1;
+    endif;
+  i = i + 1;
+  end;
+endif;
+
+### 删除维度子集 ###
+if(pDimension@='');
+  k = 1;
+  while(k<=dimsiz('}Dimensions'));
+    vDimension = dimnm('}Dimensions',k);
+    vDim = '}Subsets'|vDimension;
+    if(dimensionexists(vDim)=1);
+      i = 1;
+      while(i<=dimsiz(vDim));
+        vSubset = dimnm(vDim,i)
+        if(subst(vSubset,1,4)@='Cube' % subst(vSubset,1,6)@='Export' % subst(vSubset,1,8)@='Transfer' % subst(vSubset,1,6)@='Import' 
+          % subst(vSubset,1,11)@='Tempsubset_' % subst(vSubset,1,3)@='Gen' % subst(vSubset,1,9)@='TempView' % subst(vSubset,1,7)@='Tranfer' );
+          ViewDestory(vDimension,vSubset);
+          i = i - 1;
+        endif;
+      i = i + 1;
+      end;
+    endif;
+  k = k + 1;
+  end;
+else;
+vDimension = pDimension;
+vDim = '}Subsets'|vDimension;
+  if(dimensionexists(vDim)=1);
+  i = 1;
+  while(i<=dimsiz(vDim));
+    vSubset = dimnm(vDim,i)
+    if(subst(vSubset,1,4)@='Cube' % subst(vSubset,1,6)@='Export' % subst(vSubset,1,8)@='Transfer' % subst(vSubset,1,6)@='Import' 
+      % subst(vSubset,1,11)@='Tempsubset_' % subst(vSubset,1,3)@='Gen' % subst(vSubset,1,9)@='TempView' % subst(vSubset,1,7)@='Tranfer' );
+      ViewDestory(vDimension,vSubset);
+      i = i - 1;
+    endif;
+  i = i + 1;
+  end;
+endif;
+endif;
+
