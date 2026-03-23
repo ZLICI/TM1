@@ -62,3 +62,58 @@ DatasourceNameForServer = cCubeSource;
 DatasourceNameForClient = cCubeSource;
 DatasourceType='VIEW';
 DatasourceCubeView = cViewSource;
+
+
+#Section 元数据
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#Section 数据
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#logoutput('info',vS_列表);
+
+ExecuteProcess('Sys.Version.Copy.Export.to.Files'
+             ,'pVersionFrom',pVersionFrom
+             ,'pVersionTo',pVersionTo
+             ,'pYearFrom',pYearFrom
+             ,'pYearTo',pYearTo
+             ,'pCube',vValue
+             ,'pScenarioFrom',pScenarioFrom
+             ,'pScenarioTo',pScenarioTo
+            );
+
+
+ExecuteProcess('Sys.Version.Copy.Import.from.Files'
+             ,'pVersionFrom',pVersionFrom
+             ,'pVersionTo',pVersionTo
+             ,'pYearFrom',pYearFrom
+             ,'pYearTo',pYearTo
+             ,'pCube',vValue
+            ,'pScenarioFrom',pScenarioFrom
+             ,'pScenarioTo',pScenarioTo
+            );
+#Section 结尾
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+IF(ViewExists(cCubeSource,cViewSource)=1);
+   ViewDestroy(cCubeSource,cViewSource);
+Endif;
+
+I = 1;
+WHILE (TABDIM(cCubeSource, I) @<> '');
+    IF(SubsetExists(TABDIM(cCubeSource, I),cSubSource )=1);
+        SubsetDestroy(TABDIM(cCubeSource, I),cSubSource);
+    Endif;
+    I = I + 1;
+END;
+
+
