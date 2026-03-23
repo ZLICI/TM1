@@ -1,0 +1,14 @@
+if(Scan(',',客户名)>0);
+vTemp = '';
+vChar = '';
+k=1;
+WHILE( k <= LONG(客户名) );
+vChar = SUBST(客户名, k, 1);
+  IF(vChar @= ',');
+    vChar = ' ';
+  ENDIF;
+vTemp = vTemp | vChar;
+k = k + 1;
+END;
+客户名 = vTemp;
+endif;
