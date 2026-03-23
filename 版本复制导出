@@ -1,0 +1,262 @@
+#Section 序言
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+cProcessName = GetProcessName();
+cTM1UserName = TM1User();
+cTM1UserName=AttrS( '}Clients', cTM1UserName, '}TM1_DefaultDisplayValue' ) ;
+cTimeStamp = TimSt( Now, '\Y\m\d\h\i\s' );
+sRandomInt = NumberToString( INT( RAND( ) * 1000 ));
+cDebugFile = GetProcessErrorFileDirectory | cProcessName | '.' | cTimeStamp | '.' | sRandomInt ;
+sDebugFile = cDebugFile | 'Prolog.debug';
+NumericGlobalVariable('PrologMinorErrorCount');
+###############################################
+cCubeSource=pCube;
+cCubeTarget = pCube;
+
+
+cInterface_File_Path=CellGetS('Sys_Parameter','Interface_File_Path','文本');
+filename=cInterface_File_Path|'version_copy\'|pCube|'.cma';
+
+#cInterface_File_Path=CellGetS('Sys_Parameter','Interface_File_Path','文本');
+#filename=cInterface_File_Path|'version_copy\'|'aaa'|'.cma';
+###############################################
+#
+#   Define Temporary Object Name
+#
+###############################################
+cTempName = 'TI_' | cProcessName | NumberToString(Int(Rand() * 10000));
+### Check if the view already exists
+While (ViewExists(cCubeSource, cTempName) <> 0);
+    cTempName = 'TI_' | cProcessName | NumberToString(Int(Rand() * 10000));
+End;
+cViewSource = cTempName|'_Source';
+cSubSource= cTempName|'_Source';
+cViewTarget = cTempName | '_Target';
+cSubTarget = cTempName | '_Target';
+
+#nCubeSize = CubeDimensionCountGet(pCube);
+
+cDimYear = 'S_年份';
+cDimVersion = 'S_版本';
+cDimScenario= 'S_场景';
+#cDimMonth= 'Month';
+
+
+
+nDimVersion = 0;
+nDimYear = 0;
+nDimScenario=0;
+#nDimMonth = 0;
+
+
+nDimensionCount = 0;
+sDimension = TabDim( cCubeSource, nDimensionCount + 1 );
+While( sDimension @<> '' );
+  nDimensionCount = nDimensionCount + 1;
+  If (sDimension @= cDimVersion);
+     nDimVersion = nDimensionCount;
+  Endif;
+  If (sDimension @= cDimYear);
+     nDimYear = nDimensionCount;
+  Endif;
+  If (sDimension @= cDimScenario);
+     nDimScenario = nDimensionCount;
+  Endif;
+#  If (sDimension @= cDimMonth);
+#     nDimMonth = nDimensionCount;
+#  Endif;
+
+  sDimension = TabDim( cCubeSource, nDimensionCount + 1 );
+End;
+
+nError = 0;
+#If (nDimScenario = 0);
+   # AsciiOutput(sDebugFile, 'Scenario dimension is not part of the cube ' | cCubeSource);
+#    nError = 1;
+#Endif;
+
+If (nDimVersion = 0);
+    #AsciiOutput(sDebugFile, 'Version dimension is not part of the cube ' | cCubeSource);
+    nError = 1;
+Endif;
+
+If (nDimYear = 0);
+   # AsciiOutput(sDebugFile, 'Financial Year dimension is not part of the cube ' | cCubeSource);
+    nError = 1;
+Endif;
+
+#If (nDimMonth = 0);
+   # AsciiOutput(sDebugFile, 'Financial Year dimension is not part of the cube ' | cCubeSource);
+#    nError = 1;
+#Endif;
+
+If (nError = 1);
+    ProcessBreak();
+Endif;
+
+
+
+#########  Create DataSource  #############
+
+If(ViewExists(cCubeSource,cViewSource)=1);
+  ViewDestroy(cCubeSource,cViewSource);
+Endif;
+ViewCreate(cCubeSource,cViewSource);
+
+cDim='S_场景';
+If(SubsetExists(cDim,cSubSource )=1);
+  SubsetDeleteAllElements(cDim,cSubSource);
+Else;
+  SubsetCreate(cDim,cSubSource );
+Endif;
+SubsetElementInsert(cDim,cSubSource,pScenarioFrom,1);
+ViewSubsetAssign(cCubeSource,cViewSource,cDim,cSubSource);
+
+cDim='S_版本';
+If(SubsetExists(cDim,cSubSource )=1);
+  SubsetDeleteAllElements(cDim,cSubSource);
+Else;
+  SubsetCreate(cDim,cSubSource );
+Endif;
+SubsetElementInsert(cDim,cSubSource,pVersionFrom,1);
+ViewSubsetAssign(cCubeSource,cViewSource,cDim,cSubSource);
+
+cDim='S_年份';
+If(SubsetExists(cDim,cSubSource )=1);
+  SubsetDeleteAllElements(cDim,cSubSource);
+Else;
+  SubsetCreate(cDim,cSubSource );
+Endif;
+SubsetElementInsert(cDim,cSubSource,pYearFrom,1);
+ViewSubsetAssign(cCubeSource,cViewSource,cDim,cSubSource);
+
+#########  Clear DataTarget  #############
+
+If(ViewExists(cCubeTarget,cViewTarget)=1);
+  ViewDestroy(cCubeTarget,cViewTarget);
+Endif;
+ViewCreate(cCubeTarget,cViewTarget);
+
+cDim='S_场景';
+If(SubsetExists(cDim,cSubTarget )=1);
+  SubsetDeleteAllElements(cDim,cSubTarget);
+Else;
+  SubsetCreate(cDim,cSubTarget );
+Endif;
+SubsetElementInsert(cDim,cSubTarget,pScenarioTo,1);
+ViewSubsetAssign(cCubeTarget,cViewTarget,cDim,cSubTarget);
+
+cDim='S_版本';
+If(SubsetExists(cDim,cSubTarget )=1);
+  SubsetDeleteAllElements(cDim,cSubTarget);
+Else;
+  SubsetCreate(cDim,cSubTarget );
+Endif;
+SubsetElementInsert(cDim,cSubTarget,pVersionTo,1);
+ViewSubsetAssign(cCubeTarget,cViewTarget,cDim,cSubTarget);
+
+cDim='S_年份';
+If(SubsetExists(cDim,cSubTarget )=1);
+  SubsetDeleteAllElements(cDim,cSubTarget);
+Else;
+  SubsetCreate(cDim,cSubTarget );
+Endif;
+SubsetElementInsert(cDim,cSubTarget,pYearTo,1);
+ViewSubsetAssign(cCubeTarget,cViewTarget,cDim,cSubTarget);
+
+ViewZeroOut(cCubeTarget,cViewTarget);
+
+ViewExtractSkipCalcsSet( cCubeSource, cViewSource, 1);
+ViewExtractSkipRuleValuesSet (cCubeSource, cViewSource, 0);
+ViewExtractSkipZeroesSet (cCubeSource,cViewSource, 1);
+DatasourceNameForServer = cCubeSource;
+DatasourceNameForClient = cCubeSource;
+DatasourceType='VIEW';
+DatasourceCubeView = cViewSource;
+
+
+
+
+
+
+
+
+
+#Section 元数据
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#Section 数据
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+If( nDimensionCount = 2 );
+    ASCIIOutput(filename,v1, v2, v3);
+ElseIf( nDimensionCount = 3 );
+    ASCIIOutput(filename,v1, v2, v3, v4);
+ElseIf( nDimensionCount = 4 );
+    ASCIIOutput(filename,v1, v2, v3, v4, v5);
+ElseIf( nDimensionCount = 5 );
+    ASCIIOutput(filename,v1, v2, v3, v4, v5, v6);
+ElseIf( nDimensionCount = 6 );
+    ASCIIOutput(filename,v1, v2, v3, v4, v5, v6, v7);
+ElseIf( nDimensionCount = 7 );
+    ASCIIOutput(filename,v1, v2, v3, v4, v5, v6, v7, v8);
+ElseIf( nDimensionCount = 8 );
+    ASCIIOutput(filename,v1, v2, v3, v4, v5, v6, v7, v8, v9);
+ElseIf( nDimensionCount = 9 );
+    ASCIIOutput(filename,v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
+ElseIf( nDimensionCount = 10 );
+    ASCIIOutput(filename,v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11);
+ElseIf( nDimensionCount = 11 );
+    ASCIIOutput(filename,v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12);
+ElseIf( nDimensionCount = 12 );
+    ASCIIOutput(filename,v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13);
+ElseIf( nDimensionCount = 13 );
+    ASCIIOutput(filename,v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14);
+ElseIf( nDimensionCount = 14 );
+    ASCIIOutput(filename,v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15);
+ENDIF;
+#Section 结尾
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+IF(ViewExists(cCubeSource,cViewSource)=1);
+   ViewDestroy(cCubeSource,cViewSource);
+Endif;
+
+I = 1;
+WHILE (TABDIM(cCubeSource, I) @<> '');
+    IF(SubsetExists(TABDIM(cCubeSource, I),cSubSource )=1);
+        SubsetDestroy(TABDIM(cCubeSource, I),cSubSource);
+    Endif;
+    I = I + 1;
+END;
+
+#IF(SubsetExists(cDimSource,cSubSource )=1);
+#    SubsetDestroy(cDimSource,cSubSource);
+#Endif;
+
+
+IF(ViewExists(cCubeTarget,cViewTarget)=1);
+   ViewDestroy(cCubeTarget,cViewTarget);
+Endif;
+
+I = 1;
+WHILE (TABDIM(cCubeTarget, I) @<> '');
+    IF(SubsetExists(TABDIM(cCubeTarget, I),cSubTarget )=1);
+        SubsetDestroy(TABDIM(cCubeTarget, I),cSubTarget);
+    Endif;
+    I = I + 1;
+END;
+
