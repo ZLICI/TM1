@@ -1,0 +1,33 @@
+#备份前提：需要安装7z
+
+SaveDataAll;
+
+DBFolder='D:\Database\Database';
+TargetFolder = 'D:\TM1 Database\Backup\';
+
+#If( Subst(Targetfolder,long(Targetfolder)-1,1) @<> '\');
+#    Targetfolder = Targetfolder|'\';
+#Endif;
+
+vcmd = 'C:\Program Files\7-Zip\7z a -t7z ';
+
+FileName = ' "'|TargetFolder|'Data '| TIMST(Now() ,'\Y\m\d \h\i\s') |'.zip"'|' "'|DBFolder|'" -m0=LZMA -mx=9 -ms=200m -mmt';
+
+# 压缩
+ExecuteCommand(vcmd | FileName ,1);
+
+
+
+
+#vcmd = 'C:\Program Files\Bandizip\Bandizip';
+#FileName = ' "'|TargetFolder|'Longhu Prod DB Backup '| TIMST(Now() ,'\Y\m\d \h\i\s') |'.7z"'|' "'|DBFolder|'" -m0=LZMA -mx=9 -ms=200m -mmt';
+#FileNameDest = ' "'|TargetFolder|'Longhu Prod DB Backup '| TIMST(Now() ,'\Y\m\d \h\i\s') |'.7z"';
+#FileNameSrc = ' "'|DBFolder|'" ';
+
+# 压缩
+#ExecuteCommand(vcmd | FileNameDest  |  FileNameSrc ,1);
+
+# 拷贝到nas
+#dirNasDest = '"C:\TM1 Database\"';
+#cCmdCopy = expand('xcopy %FileNameDest%  %dirNasDest% ');
+#ExecuteCommand(cCmdCopy ,1 );
