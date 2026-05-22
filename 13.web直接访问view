@@ -1,0 +1,5 @@
+tm1web超链接访问vube视图：
+=HYPERLINK(DBR("GoertekEPM:00_系统参数", "TM1 Web URL", "文本")&"&Type=CubeViewer&Cube=0105_部门费用归集&View=费用汇总数据浏览&Title_S_预算年度="&$D$14&"&Title_S_预算版本="&$D$13,"费用汇总查询一览")
+
+tm1 web url=http://ip:9510/tm1web/UrlApi.jsp#Action=Open&AccessType=PUBLlC&TM1Server=服务名&AdminHost=ip
+
