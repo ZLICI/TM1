@@ -1,0 +1,16 @@
+根据下拉框去限制显示预算实体的属性为下拉框的excel公式
+下拉框的单元格为$B$2
+需要在$B$3列写出如下公式
+=IF($B$2="合计",
+  "[S_预算实体].[S_预算实体].[U09_预算实体]",
+  IF($B$2="制费",
+    "Filter([S_预算实体].[S_预算实体].[U09_预算实体], [S_预算实体].[S_预算实体].CurrentMember.Properties(""费用类型"") = ""直接生产"" OR [S_预算实体].[S_预算实体].CurrentMember.Properties(""费用类型"") = ""间接生产"")",
+    IF($B$2="期费",
+      "Filter([S_预算实体].[S_预算实体].[U09_预算实体], [S_预算实体].[S_预算实体].CurrentMember.Properties(""费用类型"") = ""销售"" OR [S_预算实体].[S_预算实体].CurrentMember.Properties(""费用类型"") = ""管理"" OR [S_预算实体].[S_预算实体].CurrentMember.Properties(""费用类型"") = ""研发"")",
+      "Filter([S_预算实体].[S_预算实体].[U09_预算实体], [S_预算实体].[S_预算实体].CurrentMember.Properties(""费用类型"") = """ & $B$2 & """)"
+    )
+  )
+)
+
+然后在预算实体列使用如下公式
+=TM1RPTROW($B$1, "服务器名:S_预算实体", "", "", "", "", $B$3)
