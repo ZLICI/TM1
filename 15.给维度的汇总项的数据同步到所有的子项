@@ -1,0 +1,22 @@
+前序
+
+ViewExtractSkipCalcsSet (Cube, ViewName, 0);
+
+
+
+数据
+
+
+i=1;
+vcount=dimsiz(vDim);
+while(i<=vCount);
+  vEle=Dimnm(vDim,i);
+  IF(ELLEV(vDim,vEle)=0 & ELISANC(vDim,维度,vELE)=1);
+    CELLPUTS(值,目标cube，vEle,维度2，指标);
+  ENDIF;
+i=i+1;
+end;
+
+IF(ELLEV(vDim,维度)=0);
+  CELLPUTS(值,目标cube，维度,维度2，指标);
+ENDIF;
