@@ -1,22 +1,101 @@
 前序
 
-ViewExtractSkipCalcsSet (Cube, ViewName, 0);
+ViewExtractSkipCalcsSet (Cube, View, 0);
 
+ViewZeroOut(vCubeTarget,View)
 
 
 数据
 
-
+#第一种方法，全量循环，此方法执行起来较慢
+vDimension='S_预算实体';
+IF(ELLEV(vDimension,S_预算实体)=0);
+  CellPutS(值,vCubeTarget,S_预算实体,S_费用科目,vMeasure);
+ELSE;
 i=1;
-vcount=dimsiz(vDim);
+vCount=DIMSIZ(vDimension);
 while(i<=vCount);
-  vEle=Dimnm(vDim,i);
-  IF(ELLEV(vDim,vEle)=0 & ELISANC(vDim,维度,vELE)=1);
-    CELLPUTS(值,目标cube，vEle,维度2，指标);
-  ENDIF;
-i=i+1;
-end;
-
-IF(ELLEV(vDim,维度)=0);
-  CELLPUTS(值,目标cube，维度,维度2，指标);
+    vEle=DIMNM(vDimension,i);
+    If(ELLEV(vDimension,vEle)=0 & ELISANC(vDimension,S_预算实体,vEle)=1);
+        CellPutS(值,vCubeTarget,vEle,S_费用科目,vMeasure);
+    Endif;
+    i=i+1;
+End;
 ENDIF;
+
+#第二种方法，这个方法有些问题，会丢失数据，需要等将来再完善
+# 1. 如果当前行是 0 级叶子（针对源数据直接录在叶子上的情况）
+IF ( ELLEV(vDimension, S_预算实体) = 0 );
+    CellPutS(值, vCubeTarget, S_预算实体, S_费用科目, vMeasure);
+
+# 2. 如果当前行是父项（不管是第几层）
+ELSE;
+    # 获取当前父项下的所有 0 级叶子
+    sMdx = '{DESCENDANTS([S_预算实体].[S_预算实体].[' | S_预算实体 | '], 0)}';
+    
+    IF ( SubsetCreateByMDX('tmpLeafSub', sMdx, 1) = 1 );
+        nLeafCount = SubsetGetSize(vDimension, 'tmpLeafSub');
+        i = 1;
+        
+        WHILE ( i <= nLeafCount );
+            sLeaf = SubsetGetElementName(vDimension, 'tmpLeafSub', i);
+            
+            # 查一下源 Cube 里，这个叶子自己有没有值
+            sLeafVal = CellGetS(vCubeSource, sLeaf, S_费用科目, vMeasure);
+            
+            IF ( sLeafVal @<> '' );
+                # 叶子有自己手输的值，优先用叶子的
+                CellPutS(sLeafVal, vCubeTarget, sLeaf, S_费用科目, vMeasure);
+            ELSE;
+                # 叶子为空，把当前父项的行数据（值）塞给叶子
+                CellPutS(值, vCubeTarget, sLeaf, S_费用科目, vMeasure);
+            ENDIF;
+            
+            i = i + 1;
+        END;
+        
+        SubsetDestroy(vDimension, 'tmpLeafSub');
+    ENDIF;
+ENDIF;
+
+#第三种方法，这个可以实现，并且速度飞快！
+vDimension = 'S_预算实体';
+# 1. 如果当前行是 0 级叶子（针对源数据直接录在叶子上的情况）
+IF ( ELLEV(vDimension, S_预算实体) = 0 );
+    CellPutS(值, vCubeTarget, S_预算实体, S_费用科目, vMeasure);
+
+# 2. 如果当前行是父项（不管是第几层）
+ELSE;
+# ==========================================================
+# 极致优化版：利用字符串队列进行子树向下遍历（告别全维度扫描）
+# ==========================================================
+
+# 初始化队列，将当前数据源的父项放入队列中（以 '|' 作为分隔符）
+sQueue = S_预算实体 | '|';
+
+WHILE( sQueue @<> '' );
+    # 1. 从队列头部取出一个节点
+    nPos = Scan( '|', sQueue );
+    sCurrNode = SubSt( sQueue, 1, nPos - 1 );
+    sQueue = SubSt( sQueue, nPos + 1, Long( sQueue ) - nPos );
+    
+    # 2. 获取当前节点的直接子节点数量
+    nNumChildren = ElCompN( vDimension, sCurrNode );
+    nI = 1;
+    
+    WHILE( nI <= nNumChildren );
+        sChild = ElComp( vDimension, sCurrNode, nI );
+        
+        # 3. 判断子节点是 0 级明细还是合并项
+        IF( ElLev( vDimension, sChild ) = 0 );
+            # 如果是 0 级明细，直接写入目标 Cube
+            CellPutS( 值, vCubeTarget, sChild, S_费用科目, vMeasure );
+        ELSE;
+            # 如果子节点本身还是合并项，将其追加到队列中继续向下遍历
+            sQueue = sQueue | sChild | '|';
+        ENDIF;
+        
+        nI = nI + 1;
+    END;
+
+END;
