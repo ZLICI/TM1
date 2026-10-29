@@ -1,0 +1,47 @@
+不限制线程，全量跑：
+调用进程：
+
+参数：pCostcenter
+vDimension='Cost Center';
+
+IF(ellev(vDimension,pCostcenter)=0);
+  runprocess('被调用进程','参数1',参数1,'参数2',参数2,'vCost Center',pCostcenter);
+ELSE;
+i=1;
+while(i<=dimsiz(vDimension));
+  vCostCenter = dinnm(vDimension,i);
+  IF(ellev(vDimension,vCostCenter)=0 & ELISANC(vDimension,pCostcenter,vCostCenter)=1);
+    runprocess('被调用进程','参数1',参数1,'参数2',参数2,'vCost Center',vCostCenter);
+  ENDIF;
+i=i+1;
+end;
+
+endif;
+
+被调用进程：
+需要设置vCost Center参数。
+
+
+限制线程个数：
+调用进程：
+i=1;
+count=1;
+while(i<=dimsiz(vDimension));
+  vCostCenter = dinnm(vDimension,i);
+  IF(ellev(vDimension,vCostCenter)=0 & ELISANC(vDimension,pCostcenter,vCostCenter)=1);
+    vLockName='成本中心（随便叫什么名字）'|numbertostring(count);#设置允许执行名称
+    runprocess('被调用进程','参数1',参数1,'参数2',参数2,'vCost Center',vCostCenter,'vLockName',vLockName);#被调用进程需要增加参数vLockName
+    count=count+1;
+    if(count=21);#设置最多执行线程个数
+      count=1;#重置count
+    endif;
+  ENDIF;
+i=i+1;
+end;
+
+被调用进程：
+参数：
+除了正常参数外还需额外增加vLockName(字符串)
+
+前序：
+synchronized(vLockName);
